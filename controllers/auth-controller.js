@@ -71,7 +71,9 @@ class AuthController {
             await tokenService.storeToken(token, userId);
             res.cookie('token', token, {
                 maxAge: 1000 * 60 * 60 * 24 * 30,
-                httpOnly: true
+                httpOnly: true,
+                sameSite: 'none',
+                secure: true
             });
 
             const userDto = new UserDto(user);
@@ -120,7 +122,9 @@ class AuthController {
 
             res.cookie('token', token, {
                 maxAge: 1000 * 60 * 60 * 24 * 30,
-                httpOnly: true
+                httpOnly: true,
+                sameSite: 'none',
+                secure: true
             });
 
             const userDto = new UserDto(user);
@@ -234,7 +238,9 @@ class AuthController {
 
         res.cookie('token', newGeneratedToken, {
             maxAge: 1000 * 60 * 60 * 24 * 30,
-            httpOnly: true
+            httpOnly: true,
+            sameSite: 'none',
+            secure: true
         });
 
         const userDto = new UserDto(user);
@@ -246,7 +252,11 @@ class AuthController {
         const { token } = req.cookies;
         await tokenService.removeToken(token);
 
-        res.clearCookie('token');
+        res.clearCookie('token', {
+            sameSite: 'none',
+            secure: true
+
+        });
         res.send({ user: null });
     }
 }
