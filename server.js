@@ -26,13 +26,12 @@ dbConnect();
 app.use(cookieParser());
 app.use(cors({
     credentials: true,
-    // origin: ['http://localhost:3000'],
-    origin: [`${process.env.CLIENT_URL}`, 'http://localhost:3000']
+    origin: [`${process.env.CLIENT_URL}`]
 }));
 
 
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', `https://realpizza.onrender.com`);
+    res.setHeader('Access-Control-Allow-Origin', `${process.env.CLIENT_URL}`);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.setHeader('Access-Control-Allow-Credentials', true); // Add this line
@@ -70,15 +69,6 @@ server.listen(PORT, HOST, function(err) {
     if (err) return console.log(err);
     console.log(`Listening on http://${HOST}:${PORT}`);
 });
-
-
-
-// const io = require('socket.io')(server, {
-//     cors: {
-//         origin: 'http://localhost:3000',
-//         methods: ['GET', "POST"]
-//     }
-// });
 
 
 const eventEmitter = new Emitter();

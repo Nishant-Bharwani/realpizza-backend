@@ -226,7 +226,7 @@ class AuthController {
 
         }
 
-        const newGeneratedToken = tokenService.generateTokens({ userId: user._id });
+        const newGeneratedToken = tokenService.generateTokens({ userId: user._id, role: user.role });
 
         try {
             await tokenService.updateToken(userData.userId, newGeneratedToken);
@@ -257,7 +257,7 @@ class AuthController {
             secure: true
 
         });
-        res.send({ user: null });
+        res.send({ user: null, isAuth: false });
     }
 }
 
