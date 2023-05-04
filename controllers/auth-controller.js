@@ -37,7 +37,7 @@ class AuthController {
                 html: `
               <p>Hi ${name},</p>
               <p>Thank you for registering with RealPizza</p>
-              <p>Please click <a href="http://localhost:3000/auth/verify/${token}">here</a> to verify your email address.</p>
+              <p>Please click <a href="${process.env.CLIENT_URL}/auth/verify/${token}">here</a> to verify your email address.</p>
               <p>If you did not request this, please ignore this email.</p>
               <p>Regards,</p>
               <p>Team RealPizza</p>
@@ -157,7 +157,7 @@ class AuthController {
                 from: process.env.EMAIL_ADDRESS,
                 to: email,
                 subject: 'Reset your password',
-                text: `Click on this link to reset your password: http://localhost:3000/reset-password/${resetToken}`
+                text: `Click on this link to reset your password: ${process.env.CLIENT_URL}/reset-password/${resetToken}`
             };
             await mailService.sendMail(mailOptions);
 

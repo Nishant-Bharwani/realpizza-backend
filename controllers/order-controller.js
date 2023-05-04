@@ -4,6 +4,7 @@ const orderService = require('../services/order-service');
 const userService = require('../services/user-service');
 const OrderModel = require('../models/order-model');
 const crypto = require('crypto');
+const UserModel = require('../models/user-model');
 
 const Razorpay = require('razorpay');
 
@@ -120,8 +121,8 @@ class OrderController {
             const orderId = req.query.orderId;
             const address = req.query.address;
             const phone = req.query.phone
-            console.log(orderId, address, phone);
 
+            const user = await UserModel.findById(userId);
 
 
             const { razorpay_payment_id: razorpayPaymentId, razorpay_order_id: razorpayOrderId, razorpay_signature: razorpaySignature } = req.body;
@@ -136,16 +137,9 @@ class OrderController {
                 return res.status(400).json({ message: 'Request signature did not match. Please try again with a valid signature.' })
 
             } else {
-                res.redirect(`http://localhost:3000/custom-pizza`);
+                res.redirect(`${process.env.CLIENT_URL}/custom-pizza`);
             }
 
-            // Verify signature
-            //     const hmac = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET);
-            //     hmac.update(orderId + '|' + razorpayPaymentId);
-            //     const digest = hmac.digest('hex');
-            //     if (digest !== razorpaySignature) {
-            //         return res.status(400).json({ message: 'Request signature did not match. Please try again with a valid signature.' })
-            //     }
 
             const order = await OrderModel.findOne({ userId, orderId });
             if (!order) {
@@ -160,6 +154,7 @@ class OrderController {
 
             // Update order status
             order.status = 'in_kitchen';
+            order.confirmed = true;
             order.razorpayPaymentId = razorpayPaymentId;
             order.razorpayOrderId = razorpayOrderId;
             await order.save();
@@ -167,11 +162,10 @@ class OrderController {
 
             await orderService.updateStock(order);
 
-            res.json({ message: 'Order confirmed' });
-            // } catch (err) {
-            //     console.log(err);
-            //     res.status(500).json({ message: 'Internal server error' });
+            const eventEmitter = req.app.get('eventEmitter');
+            eventEmitter.emit('orderConfirmed', { name: user.name });
 
+            res.json({ message: 'Order confirmed' });
         } catch (err) {
             console.log(err);
             res.status(500).json({ message: 'Internal server error' });
@@ -183,8 +177,9 @@ class OrderController {
         const { userId } = req.params;
         try {
             const orders = await OrderModel.find({
-                userId
-            }).populate('pizzas.pizza').select('-user -createdAt -updatedAt -__v');
+                userId,
+                confirmed: true
+            }).populate('pizzas.pizza').select('-user -createdAt -updatedAt -__v').sort({ date: -1 });
             res.json(orders);
         } catch (err) {
             console.log(err);

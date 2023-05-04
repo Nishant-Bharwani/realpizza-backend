@@ -24,7 +24,9 @@ class AdminController {
     }
     async getAllOrders(req, res) {
         try {
-            const orders = await OrderModel.find().populate('userId').select('-password').populate('pizzas.pizza');
+            const orders = await OrderModel.find({
+                confirmed: true
+            }).populate('userId').select('-password').populate('pizzas.pizza').sort({ date: -1 });
             res.json(orders);
         } catch (err) {
             console.log(err);

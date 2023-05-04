@@ -1,21 +1,13 @@
 const pizzaRouter = require('express').Router();
-const Razorpay = require('razorpay');
-
 const authMiddleware = require('../middlewares/auth-middleware');
-
 const pizzaController = require('../controllers/pizza-controller');
 
 
-const { pizzaValidationSchema } = require('../middlewares/pizzaValidator-middleware');
-
-
-
 pizzaRouter.get('/', pizzaController.getAllPizzas);
-// pizzaRouter.post('/createOrder', pizzaValidationSchema, authMiddleware, pizzaController.createOrder);
-// pizzaRouter.post('/confirm', authMiddleware, pizzaController.confirmOrder); // Not tested yet
-// pizzaRouter.get('/getCart', authMiddleware, pizzaController.getCartItems);
-// pizzaRouter.post('/addToCart', authMiddleware, pizzaController.addTocart);
-// pizzaRouter.delete('/removeFromCart', authMiddleware, pizzaController.removeFromCart);
+pizzaRouter.get('/getBases', authMiddleware, pizzaController.getAllBases);
+pizzaRouter.get('/getSauces', authMiddleware, pizzaController.getAllSauces);
+pizzaRouter.get('/getCheeses', authMiddleware, pizzaController.getAllCheeses);
+pizzaRouter.get('/getVeggies', authMiddleware, pizzaController.getAllVeggies);
 
 
 module.exports = pizzaRouter;

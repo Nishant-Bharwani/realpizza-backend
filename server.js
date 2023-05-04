@@ -94,4 +94,8 @@ eventEmitter.on('orderConfirmedCart', (data) => {
     io.to(`adminOrderPage`).emit('orderConfirmedCart', data);
 });
 
+eventEmitter.on('orderConfirmed', (data) => {
+    io.to('adminOrderPage').emit('orderConfirmed', data);
+})
+
 module.exports = { io };

@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const orderSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
     orderId: { type: String, required: true, unique: true },
-    // pizzas: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Pizza' }],
     pizzas: [{
         pizza: {
             type: mongoose.Schema.Types.ObjectId,
@@ -22,7 +21,6 @@ const orderSchema = new mongoose.Schema({
     base: { type: Object },
     sauce: { type: Object },
     cheese: { type: Object },
-    // veggies: { type: [Object], default: [] },    
     veggie1: {
         type: Object
     },
@@ -34,7 +32,7 @@ const orderSchema = new mongoose.Schema({
     },
     totalPrice: { type: Number, required: true },
     quantity: { type: Number, required: true, default: 1 },
-    // status: { type: String, enum: ['received', 'in_kitchen', 'out_for_delivery', 'delivered'], default: 'received' },
+    confirmed: { type: Boolean, required: true, default: false },
     status: { type: String, default: 'created' },
     address: { type: String, default: '' },
     phone: { type: String, default: '' },

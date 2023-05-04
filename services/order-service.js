@@ -80,13 +80,13 @@ class OrderService {
 
     async updateStock(order) {
         try {
-            const { base, sauce, cheese, veggie1, veggie2, meat } = order;
+            const { base, sauce, cheese, veggie1, veggie2, meat, quantity } = order;
             if (base.name !== "") {
                 await BaseModel.findOneAndUpdate({
                     name: base.name
                 }, {
                     $inc: {
-                        stock: -1
+                        stock: -quantity
                     }
                 });
             }
@@ -96,7 +96,7 @@ class OrderService {
                     name: sauce.name
                 }, {
                     $inc: {
-                        stock: -1
+                        stock: -quantity
                     }
                 });
             }

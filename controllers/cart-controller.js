@@ -8,6 +8,8 @@ const Razorpay = require('razorpay');
 const { RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET } = require('../config');
 const crypto = require('crypto');
 
+const stockService = require('../services/stock-service');
+
 
 const razorpay = new Razorpay({
     key_id: RAZORPAY_KEY_ID,
@@ -43,10 +45,16 @@ class CartController {
                 return res.status(404).json({ message: 'Pizza not found' });
             }
             const user = await UserModel.findById(req.userId);
-            console.log(user);
             if (!user) {
                 return res.status(404).json({ message: 'User not found' });
             }
+
+            // Check if pizza is in stock
+            const isInStock = await stockService.checkPizzaAvailability(pizza, 1);
+            if (!isInStock) {
+                return res.status(404).json({ message: 'This pizza is not available at the moment!! Try some other pizza' });
+            }
+
             let cart = await CartModel.findOne({ userId: req.userId });
             if (!cart) {
                 cart = new CartModel({ userId: req.userId, pizzas: [] });
@@ -68,7 +76,6 @@ class CartController {
             } else {
                 cart.total = quantity * pizza.price;
             }
-            console.log(cart);
             await cart.save();
             return res.status(200).json({ message: "Pizza added to the cart", cart });
         } catch (error) {
@@ -116,13 +123,14 @@ class CartController {
                 return res.status(400).json({ message: 'Your cart is empty' });
             }
             console.log(cart.pizzas);
-            // Calculate the total price of the order
-            // const totalPrice = cart.pizzas.reduce(
-            //     (acc, pizza) => acc + pizza.price * pizza.quantity,
-            //     0
-            // );
 
             const totalPrice = cart.total;
+
+            const isInStock = await stockService.checkPizzaAvailabilityForCart(cart.pizzas);
+            console.log(isInStock);
+            if (!isInStock.isInStock) {
+                return res.status(404).json({ message: `${isInStock.pizza.name} is not available for this quantity` });
+            }
 
             const { address, phone } = req.body;
 
@@ -182,21 +190,8 @@ class CartController {
 
             console.log(req.query);
             const orderId = req.query.orderId;
-            // const orderId = req.headers['orderId'];
             const { razorpay_payment_id: razorpayPaymentId, razorpay_order_id: razorpayOrderId, razorpay_signature: razorpaySignature } = req.body;
             console.log(orderId, razorpayPaymentId, razorpayOrderId, razorpaySignature);
-            // console.log(req.body, orderId);
-
-            // // Verify signature
-            // const hmac = crypto.createHmac('sha256', RAZORPAY_KEY_SECRET).update(body.toString());
-            // hmac.update(orderId + '|' + razorpayPaymentId);
-            // const digest = hmac.digest('hex');
-            // if (digest !== razorpaySignature) {
-            //     return res.status(400).json({ message: 'Request signature did not match. Please try again with a valid signature.' })
-            // }
-
-
-
 
             const body = razorpayOrderId + "|" + razorpayPaymentId;
             const expectedSignature = crypto.createHmac("sha256", RAZORPAY_KEY_SECRET).update(body.toString()).digest('hex');
@@ -219,6 +214,7 @@ class CartController {
 
             // Update order status
             order.status = 'in_kitchen';
+            order.confirmed = true;
             order.razorpayPaymentId = razorpayPaymentId;
             order.razorpayOrderId = razorpayOrderId;
             await order.save();

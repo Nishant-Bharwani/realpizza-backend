@@ -13,8 +13,6 @@ const adminMiddleware = async(req, res, next) => {
         const decoded = await tokenService.verifyToken(token);
         req.userId = decoded.userId;
         req.role = decoded.role;
-        console.log(req.role);
-        console.log("Decoded from admin", decoded);
         if (req.role === 'admin') {
             next();
         } else {
